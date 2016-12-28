@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ChooseAVechile</string>
+    <string name="manufacturer">Manufacturer :</string>
+    <string name="model">Model :</string>
+    <string name="year">Year :</string>
+    <string name="manufacturer_select">Enter a Manufacturer</string>
+    <string name="model_select">Enter a Model</string>
+    <string name="year_select">Enter a Year</string>
+    <string name="submit">Submit</string>
+</resources>

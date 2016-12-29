@@ -1,7 +1,10 @@
 package com.test.mycompany.chooseavechile.view;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +24,9 @@ import com.test.mycompany.chooseavechile.model.component.DaggerItemComponent;
 import com.test.mycompany.chooseavechile.model.module.ItemModule;
 import com.test.mycompany.chooseavechile.presenter.ItemsPresenter;
 import com.test.mycompany.chooseavechile.util.CommonComponents;
+import com.test.mycompany.chooseavechile.util.EndlessRecyclerViewScrollListener;
+import com.test.mycompany.chooseavechile.util.OnItemClickListener;
+import com.test.mycompany.chooseavechile.util.OnLoadMoreListener;
 import com.test.mycompany.chooseavechile.view.contract.ItemsContract;
 
 import java.util.List;
@@ -40,7 +46,15 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
 
     private ItemsAdapter itemsAdapter;
     private RecyclerView recyclerView;
+    private int page=0, pageSize=10, totalPageCount =0;
     private View currentView;
+    // Store a member variable for the listener
+    private EndlessRecyclerViewScrollListener scrollListener;
+    private int lastVisibleItem, totalItemCount;
+    private boolean isLoading;
+    private OnLoadMoreListener mOnLoadMoreListener;
+
+    private int type;
 
 
     @Inject
@@ -56,6 +70,31 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
         return f;
     }
 
+    TextClicked mCallback;
+
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (TextClicked) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement TextClicked");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        mCallback = null;
+        super.onDetach();
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,26 +105,22 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                 .itemModule(new ItemModule(this))
                 .build().inject(this);
 
-        int type = getArguments().getInt(EXTRA_MESSAGE);
+        type = getArguments().getInt(EXTRA_MESSAGE);
 
         switch (type){
             case CommonComponents.TYPE_MANUFACTURER:
-                getManufacturers(0,10);
+                getManufacturers(page, pageSize);
                 break;
             default:
                 Toast.makeText(getActivity(),"Cannot fetch data",Toast.LENGTH_SHORT).show();
                 break;
         }
 
-
     }
 
     public void getManufacturers(int page, int pageSize ){
-
         String url = BuildConfig.SERVER_URL+"manufacturer?";
         itemsPresenter.getItems(url,null,page,pageSize);
-
-
     }
 
     @Override
@@ -114,19 +149,76 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
     }
 
     @Override
-    public void updateList(ItemBean itemBean){
+    public void updateList(final ItemBean itemBean){
         if (itemBean!=null){
-            List<Items> itemsList = itemBean.getItemsList();
+            final List<Items> itemsList = itemBean.getItemsList();
             if(itemsList!=null){
+
+                totalPageCount = itemBean.getTotalPageCount();
+
+                int tempPage = itemBean.getPage();
+                if(tempPage < totalPageCount-1)
+                {
+                    page = tempPage+1;
+                }
 
                 recyclerView = (RecyclerView) currentView.findViewById(R.id.recycler_view);
 
-                RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext().getApplicationContext());
+                final LinearLayoutManager  mLayoutManager = new LinearLayoutManager(getContext().getApplicationContext());
                 recyclerView.setLayoutManager(mLayoutManager);
+                //recyclerView.setItemAnimator(new DefaultItemAnimator());
+                itemsAdapter = new ItemsAdapter(itemsList,new OnItemClickListener() {
+                    @Override
+                    public void setOnItemClick(View view, int position) {
+                        mCallback.sendValue(type,itemsList.get(position).getmValue());
+                        getFragmentManager().popBackStack();
+                    }
+                });
+                recyclerView.setAdapter(itemsAdapter);
+
+                // SETTING ON CLICK LISTENER ON ADAPTER
+                //itemsAdapter.setOnItemClickListener(
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-                itemsAdapter = new ItemsAdapter(itemsList);
-                recyclerView.setAdapter(itemsAdapter);
+                /*recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+
+                        totalItemCount = mLayoutManager.getItemCount();
+                        lastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
+
+                        if (!isLoading && totalItemCount <= (lastVisibleItem + pageSize)) {
+                            if (mOnLoadMoreListener != null) {
+                                //mOnLoadMoreListener.onLoadMore();
+                                getManufacturers(page, pageSize);
+                            }
+                            isLoading = true;
+                        }
+                    }
+                });
+*/
+                // Retain an instance so that you can call `resetState()` for fresh searches
+                scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager) {
+                    @Override
+                    public void onLoadMore(int offset, int totalItemsCount, RecyclerView view) {
+                        // Triggered only when new data needs to be appended to the list
+                        // Add whatever code is needed to append new items to the bottom of the list
+                        //getManufacturers(page, pageSize);
+
+                       /* final int curSize = itemsAdapter.getItemCount();
+                        itemsList.addAll(itemBean.getItemsList());
+
+                        view.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                itemsAdapter.notifyItemRangeInserted(curSize, itemBean.getItemsList().size() - 1);
+                            }
+                        });*/
+                    }
+                };
+                // Adds the scroll listener to RecyclerView
+                recyclerView.addOnScrollListener(scrollListener);
 
             }
         }
@@ -136,8 +228,6 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
     public void showError(String message) {
 
     }
-
-
 
     @Override
     public void onClick(View v) {}

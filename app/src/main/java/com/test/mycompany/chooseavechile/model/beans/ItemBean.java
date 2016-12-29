@@ -8,29 +8,29 @@ import java.util.List;
 
 public class ItemBean {
 
-    String page;
-    String totalPageCount;
+    int page;
+    int totalPageCount;
     List<Items> itemsList;
 
-    public ItemBean(String page, String totalPageCount, List<Items> itemsList) {
+    public ItemBean(int page, int totalPageCount, List<Items> itemsList) {
         this.page = page;
         this.totalPageCount = totalPageCount;
         this.itemsList = itemsList;
     }
 
-    public String getPage() {
+    public int getPage() {
         return page;
     }
 
-    public void setPage(String page) {
+    public void setPage(int page) {
         this.page = page;
     }
 
-    public String getTotalPageCount() {
+    public int getTotalPageCount() {
         return totalPageCount;
     }
 
-    public void setTotalPageCount(String totalPageCount) {
+    public void setTotalPageCount(int totalPageCount) {
         this.totalPageCount = totalPageCount;
     }
 

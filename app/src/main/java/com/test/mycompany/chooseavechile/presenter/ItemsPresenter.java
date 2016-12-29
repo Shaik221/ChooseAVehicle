@@ -74,8 +74,8 @@ public class ItemsPresenter implements ItemsContract.Presenter {
                             String jsonStr = json.string();
                             JSONObject jsonObject = new JSONObject(jsonStr);
 
-                            String page = jsonObject.getString("page");
-                            String pageCount = jsonObject.getString("totalPageCount");
+                            int page = jsonObject.getInt("page");
+                            int pageCount = jsonObject.getInt("totalPageCount");
 
                             JSONObject jsonwkdaObj = jsonObject.getJSONObject("wkda");
 

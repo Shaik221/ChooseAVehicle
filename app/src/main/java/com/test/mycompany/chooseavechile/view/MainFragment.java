@@ -4,11 +4,13 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.test.mycompany.chooseavechile.R;
@@ -16,7 +18,7 @@ import com.test.mycompany.chooseavechile.util.CommonComponents;
 
 public class MainFragment extends Fragment implements View.OnClickListener{
 
-    private EditText manufractureText, modelText, yearText;
+    private TextView manufractureText, modelText, yearText;
     private Button submitButton;
     private static String EXTRA_TYPE = "type";
     private static String EXTRA_VALUE = "value";
@@ -47,9 +49,9 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.main_fragment, null);
-        manufractureText = (EditText) view.findViewById(R.id.manufacturer);
-        modelText = (EditText) view.findViewById(R.id.model);
-        yearText = (EditText) view.findViewById(R.id.year);
+        manufractureText = (TextView) view.findViewById(R.id.manufacturer);
+        modelText = (TextView) view.findViewById(R.id.model);
+        yearText = (TextView) view.findViewById(R.id.year);
         submitButton = (Button) view.findViewById(R.id.submitButton);
 
 
@@ -57,6 +59,11 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         modelText.setOnClickListener(this);
         yearText.setOnClickListener(this);
         submitButton.setOnClickListener(this);
+
+        //hide soft key board
+        manufractureText.setInputType(InputType.TYPE_NULL);
+        modelText.setInputType(InputType.TYPE_NULL);
+        yearText.setInputType(InputType.TYPE_NULL);
 
         if(getArguments()!=null){
             int type = getArguments().getInt(EXTRA_TYPE);

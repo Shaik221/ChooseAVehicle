@@ -14,6 +14,8 @@
         android:id="@+id/pageTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
         android:layout_centerHorizontal="true"
         android:text="@string/app_name" />
 
@@ -28,11 +30,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="right"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:text="@string/manufacturer" />
             <EditText
                 android:id="@+id/manufacturer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColorHint="#9B9B9B"
                 android:gravity="left"
                 android:hint="@string/manufacturer_select" />
 
@@ -42,12 +47,15 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:gravity="right"
                 android:text="@string/model" />
             <EditText
                 android:id="@+id/model"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColorHint="#9B9B9B"
                 android:gravity="left"
                 android:hint="@string/model_select" />
 
@@ -57,6 +65,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:gravity="right"
                 android:text="@string/year" />
             <EditText
@@ -64,6 +74,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="left"
+                android:textColorHint="#9B9B9B"
                 android:hint="@string/year_select" />
 
         </TableRow>
@@ -74,6 +85,9 @@
         android:layout_below="@+id/userInputs"
         android:layout_width="wrap_content"
         android:id="@+id/submitButton"
+        android:textSize="16sp"
+        android:layout_marginTop="20dp"
+        android:textStyle="bold"
         android:clickable="true"
         android:layout_height="wrap_content"
         android:text="@string/submit"

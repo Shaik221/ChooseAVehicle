@@ -2,6 +2,7 @@ package com.test.mycompany.chooseavechile.view;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,6 +10,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.test.mycompany.chooseavechile.BuildConfig;
@@ -21,9 +24,7 @@ import com.test.mycompany.chooseavechile.model.component.DaggerItemComponent;
 import com.test.mycompany.chooseavechile.model.module.ItemModule;
 import com.test.mycompany.chooseavechile.presenter.ItemsPresenter;
 import com.test.mycompany.chooseavechile.util.CommonComponents;
-import com.test.mycompany.chooseavechile.util.EndlessRecyclerViewScrollListener;
 import com.test.mycompany.chooseavechile.util.OnItemClickListener;
-import com.test.mycompany.chooseavechile.util.OnLoadMoreListener;
 import com.test.mycompany.chooseavechile.view.contract.ItemsContract;
 
 import java.util.List;
@@ -41,11 +42,12 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
     private RecyclerView recyclerView;
     private int page=0, pageSize=10, totalPageCount =0;
     private View currentView;
-    // Store a member variable for the listener
-    private EndlessRecyclerViewScrollListener scrollListener;
-    private int lastVisibleItem, totalItemCount;
-    private boolean isLoading;
-    private OnLoadMoreListener mOnLoadMoreListener;
+
+    public LinearLayoutManager  mLayoutManager=null;
+    private static RelativeLayout bottomLayout;
+
+    private boolean userScrolled = true;
+    private int pastVisiblesItems, visibleItemCount, totalItemCount;
 
     private int type;
 
@@ -120,6 +122,7 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                 }else {
                     Toast.makeText(getActivity(),"Please select Manufacturer and Type details..",Toast.LENGTH_SHORT).show();
                 }
+
                 break;
 
             default:
@@ -152,6 +155,7 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.car_manufractures_fragment, null);
+        bottomLayout = (RelativeLayout) view.findViewById(R.id.loadItemsLayout_recyclerView);
         currentView = view;
         return view;
     }
@@ -190,7 +194,7 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
 
                 recyclerView = (RecyclerView) currentView.findViewById(R.id.recycler_view);
 
-                final LinearLayoutManager  mLayoutManager = new LinearLayoutManager(getContext().getApplicationContext());
+                mLayoutManager = new LinearLayoutManager(getContext().getApplicationContext());
                 recyclerView.setLayoutManager(mLayoutManager);
                 //recyclerView.setItemAnimator(new DefaultItemAnimator());
                 itemsAdapter = new ItemsAdapter(itemsList,new OnItemClickListener() {
@@ -218,52 +222,90 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                 });
                 recyclerView.setAdapter(itemsAdapter);
 
-                // SETTING ON CLICK LISTENER ON ADAPTER
-                //itemsAdapter.setOnItemClickListener(
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
-
-                /*recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                    @Override
-                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                        super.onScrolled(recyclerView, dx, dy);
-
-                        totalItemCount = mLayoutManager.getItemCount();
-                        lastVisibleItem = mLayoutManager.findLastVisibleItemPosition();
-
-                        if (!isLoading && totalItemCount <= (lastVisibleItem + pageSize)) {
-                            if (mOnLoadMoreListener != null) {
-                                //mOnLoadMoreListener.onLoadMore();
-                                getManufacturers(page, pageSize);
-                            }
-                            isLoading = true;
-                        }
-                    }
-                });
-*/
-                // Retain an instance so that you can call `resetState()` for fresh searches
-                scrollListener = new EndlessRecyclerViewScrollListener(mLayoutManager) {
-                    @Override
-                    public void onLoadMore(int offset, int totalItemsCount, RecyclerView view) {
-                        // Triggered only when new data needs to be appended to the list
-                        // Add whatever code is needed to append new items to the bottom of the list
-                        //getManufacturers(page, pageSize);
-
-                       /* final int curSize = itemsAdapter.getItemCount();
-                        itemsList.addAll(itemBean.getItemsList());
-
-                        view.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                itemsAdapter.notifyItemRangeInserted(curSize, itemBean.getItemsList().size() - 1);
-                            }
-                        });*/
-                    }
-                };
-                // Adds the scroll listener to RecyclerView
-                recyclerView.addOnScrollListener(scrollListener);
+                // SETTING ON CLICK LISTENER ON ADAPTER
+                implementScrollListener();
 
             }
         }
+    }
+
+    // Implement scroll listener
+    private void implementScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+                    @Override
+                    public void onScrollStateChanged(RecyclerView recyclerView,
+                                                     int newState) {
+
+                        super.onScrollStateChanged(recyclerView, newState);
+
+                        // If scroll state is touch scroll then set userScrolled
+                        // true
+                        if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+                            userScrolled = true;
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx,
+                                           int dy) {
+
+                        super.onScrolled(recyclerView, dx, dy);
+                        // Here get the child count, item count and visibleitems
+                        // from layout manager
+
+                        visibleItemCount = mLayoutManager.getChildCount();
+                        totalItemCount = mLayoutManager.getItemCount();
+                        pastVisiblesItems = mLayoutManager
+                                .findFirstVisibleItemPosition();
+
+                        // Now check if userScrolled is true and also check if
+                        // the item is end then update recycler view and set
+                        // userScrolled to false
+                        if (userScrolled
+                                && (visibleItemCount + pastVisiblesItems) == totalItemCount) {
+                            userScrolled = false;
+
+                            updateRecyclerView();
+                        }
+
+                    }
+
+                });
+
+    }
+
+    // Method for repopulating recycler view
+    private void updateRecyclerView() {
+
+        // Show Progress Layout
+        bottomLayout.setVisibility(View.VISIBLE);
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+
+                for (int i = page; i < totalPageCount ; i++) {
+
+                    if (type == CommonComponents.TYPE_MANUFACTURER ) {
+                        getManufacturers(page, pageSize, CommonComponents.ACCESS_KEY);
+                    }else if (type == CommonComponents.TYPE_MODEL){
+                        getCarTypes(page, pageSize, MainActivity.selectedManufacturer, CommonComponents.ACCESS_KEY);
+                    }else if (type == CommonComponents.TYPE_YEAR){
+                        getYearOfManufacturer(MainActivity.selectedManufacturer, MainActivity.selectedCarType, CommonComponents.ACCESS_KEY);
+                    }
+                }
+                itemsAdapter.notifyDataSetChanged();// notify adapter
+
+                // After adding new data hide the view.
+                bottomLayout.setVisibility(View.GONE);
+
+            }
+        }, 5000);
     }
 
     @Override

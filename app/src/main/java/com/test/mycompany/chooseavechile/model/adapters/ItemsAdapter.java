@@ -5,11 +5,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.test.mycompany.chooseavechile.R;
 import com.test.mycompany.chooseavechile.model.beans.Items;
 import com.test.mycompany.chooseavechile.util.OnItemClickListener;
+import com.test.mycompany.chooseavechile.util.RecyclerViewClickListener;
 
 import java.util.List;
 
@@ -30,10 +32,12 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
 
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
         public TextView itemTextView;
+        public LinearLayout listLayout;
+        private RecyclerViewClickListener.OnClickListener onClickListener;
         View parentView; // The view which holds all the other views
 
         // We also create a constructor that accepts the entire item row
@@ -48,7 +52,29 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
             itemView.setClickable(true);
 
             itemTextView = (TextView) itemView.findViewById(R.id.itemTxt);
+            this.listLayout = (LinearLayout) itemView.findViewById(R.id.list_layout);
+
+            // Implement click listener over views that we need
+
+            this.listLayout.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+
+            // setting custom listener
+            if (onClickListener != null) {
+                onClickListener.OnItemClick(v, getAdapterPosition());
+
+            }
+
+        }
+
+        // Setter for listener
+        public void setClickListener(RecyclerViewClickListener.OnClickListener onClickListener) {
+            this.onClickListener = onClickListener;
+        }
+
     }
 
     @Override

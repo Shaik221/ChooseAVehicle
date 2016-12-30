@@ -5,28 +5,21 @@ import com.test.mycompany.chooseavechile.model.beans.ItemBean;
 import com.test.mycompany.chooseavechile.model.beans.Items;
 import com.test.mycompany.chooseavechile.model.services.ItemsGetService;
 import com.test.mycompany.chooseavechile.view.contract.ItemsContract;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
 import javax.inject.Inject;
-
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-/**
- * Created by rra7y33 on 12/08/2016.
- */
 public class ItemsPresenter implements ItemsContract.Presenter {
 
         Retrofit retrofit;
@@ -39,14 +32,19 @@ public class ItemsPresenter implements ItemsContract.Presenter {
             }
 
     @Override
-    public void getItems(String url, String manufacturer, int page, int pageSize) {
+    public void getItems(String url, String manufacturer, String carType, int page, int pageSize, String accessKey) {
         Map<String, String> params = new HashMap<String, String>();
-        if(manufacturer!=null)
+
+        if (manufacturer!=null)
              params.put("manufacturer", manufacturer);
+
+        if (carType != null)
+            params.put("main-type", carType);
+
 
         params.put("page", ""+page);
         params.put("pageSize", ""+pageSize);
-        params.put("wa_key", "coding-puzzle-client-449cc9d");
+        params.put("wa_key", ""+accessKey);
 
         retrofit.create(ItemsGetService.class).getItems(url, params).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -72,10 +70,15 @@ public class ItemsPresenter implements ItemsContract.Presenter {
                     public void onNext(ResponseBody json) {
                         try {
                             String jsonStr = json.string();
+                            int page=0,pageCount=0;
                             JSONObject jsonObject = new JSONObject(jsonStr);
 
-                            int page = jsonObject.getInt("page");
-                            int pageCount = jsonObject.getInt("totalPageCount");
+                            if (jsonStr.contains("page")) {
+                                page = jsonObject.getInt("page");
+                            }
+                            if (jsonStr.contains("totalPageCount")) {
+                                pageCount = jsonObject.getInt("totalPageCount");
+                            }
 
                             JSONObject jsonwkdaObj = jsonObject.getJSONObject("wkda");
 

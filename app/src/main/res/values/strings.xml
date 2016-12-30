@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">ChooseAVechile</string>
+    <string name="user_final_selection">Your Selection Details:</string>
     <string name="manufacturer">Manufacturer :</string>
     <string name="model">Model :</string>
     <string name="year">Year :</string>

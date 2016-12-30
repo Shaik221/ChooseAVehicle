@@ -1,17 +1,11 @@
 package com.test.mycompany.chooseavechile;
 
 import android.app.Application;
-import android.content.Context;
-
-import android.text.TextUtils;
-
 
 import com.test.mycompany.chooseavechile.model.component.DaggerNetComponent;
 import com.test.mycompany.chooseavechile.model.component.NetComponent;
 import com.test.mycompany.chooseavechile.model.module.AppModule;
 import com.test.mycompany.chooseavechile.model.module.NetModule;
-
-import java.util.Locale;
 
 
 

@@ -1,8 +1,5 @@
 package com.test.mycompany.chooseavechile.model.beans;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Items {
     private String mKey;
     private String mValue;

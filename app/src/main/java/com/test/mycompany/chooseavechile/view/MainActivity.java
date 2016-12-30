@@ -3,7 +3,6 @@ package com.test.mycompany.chooseavechile.view;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.EditText;
 
 
 import com.test.mycompany.chooseavechile.R;
@@ -11,8 +10,10 @@ import com.test.mycompany.chooseavechile.util.CommonComponents;
 
 public class MainActivity extends AppCompatActivity implements TextClicked  {
 
-    private EditText manufractureText;
-
+    public static  String selectedManufacturer ="";
+    public static String selectedManufacturerName = "";
+    public static  String selectedCarType="";
+    public static  String selectedYear="";
 
 
     @Override

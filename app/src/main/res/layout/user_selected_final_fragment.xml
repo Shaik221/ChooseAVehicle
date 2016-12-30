@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.test.mycompany.chooseavechile.view.MainActivity">
+
+    <TextView
+        android:id="@+id/pageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:typeface="monospace"
+        android:layout_centerHorizontal="true"
+        android:text="@string/user_final_selection" />
+
+    <TextView
+        android:id="@+id/pageDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="15dp"
+        android:textColor="#1E9B8C"
+        android:textSize="16sp"
+        android:typeface="monospace"
+        android:layout_below="@+id/pageTitle"
+        android:layout_centerHorizontal="true"
+        android:text="@string/user_final_selection" />
+
+
+</RelativeLayout>

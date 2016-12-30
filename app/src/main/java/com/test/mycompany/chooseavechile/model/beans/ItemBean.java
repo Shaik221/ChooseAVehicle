@@ -2,9 +2,6 @@ package com.test.mycompany.chooseavechile.model.beans;
 
 import java.util.List;
 
-/**
- * Created by rra7y33 on 28/12/2016.
- */
 
 public class ItemBean {
 

@@ -1,14 +1,11 @@
 package com.test.mycompany.chooseavechile.view;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,10 +30,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-
-/**
- * Created by jsi7ap2 on 24/06/2016.
- */
 
 public class CarManufacturesListFragment extends Fragment implements View.OnClickListener, ItemsContract.View {
 
@@ -108,9 +101,27 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
         type = getArguments().getInt(EXTRA_MESSAGE);
 
         switch (type){
+
             case CommonComponents.TYPE_MANUFACTURER:
-                getManufacturers(page, pageSize);
+                getManufacturers(page, pageSize, CommonComponents.ACCESS_KEY);
                 break;
+
+            case CommonComponents.TYPE_MODEL:
+                if (!MainActivity.selectedManufacturer.isEmpty()) {
+                    getCarTypes(page, pageSize, MainActivity.selectedManufacturer, CommonComponents.ACCESS_KEY);
+                }else {
+                    Toast.makeText(getActivity(),"Please select Manufacturer details..",Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            case CommonComponents.TYPE_YEAR:
+                if (!MainActivity.selectedManufacturer.isEmpty() && !MainActivity.selectedCarType.isEmpty()) {
+                    getYearOfManufacturer(MainActivity.selectedManufacturer, MainActivity.selectedCarType, CommonComponents.ACCESS_KEY);
+                }else {
+                    Toast.makeText(getActivity(),"Please select Manufacturer and Type details..",Toast.LENGTH_SHORT).show();
+                }
+                break;
+
             default:
                 Toast.makeText(getActivity(),"Cannot fetch data",Toast.LENGTH_SHORT).show();
                 break;
@@ -118,9 +129,24 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
 
     }
 
-    public void getManufacturers(int page, int pageSize ){
+    //service call for getting all manufactures details
+    public void getManufacturers(int page, int pageSize, String accessKey ){
         String url = BuildConfig.SERVER_URL+"manufacturer?";
-        itemsPresenter.getItems(url,null,page,pageSize);
+        itemsPresenter.getItems(url,null,null,page,pageSize,accessKey);
+    }
+
+    //service to get car types for the specified manufacturer
+    public void getCarTypes(int page, int pageSize, String manufacture, String accessKey)
+    {
+        String url = BuildConfig.SERVER_URL+"main-types?";
+        itemsPresenter.getItems(url,manufacture,null,page,pageSize,accessKey);
+    }
+
+    //service to get year of manufacturer for the specific car types and specified manufacturer
+    public void getYearOfManufacturer(String manufacture, String carType, String accessKey)
+    {
+        String url = BuildConfig.SERVER_URL+"built-dates?";
+        itemsPresenter.getItems(url,manufacture,carType,page,pageSize,accessKey);
     }
 
     @Override
@@ -170,6 +196,22 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                 itemsAdapter = new ItemsAdapter(itemsList,new OnItemClickListener() {
                     @Override
                     public void setOnItemClick(View view, int position) {
+
+                        String value = itemsList.get(position).getmKey();
+
+                        if (type == CommonComponents.TYPE_MANUFACTURER ) {
+                            //storing user selected items in global scope
+                            MainActivity.selectedManufacturer = value;
+                            //need to store name of the manufacturer for final user selection showing up
+                            MainActivity.selectedManufacturerName = itemsList.get(position).getmValue();
+                        }else if (type == CommonComponents.TYPE_MODEL){
+                            //storing user selected items in global scope
+                            MainActivity.selectedCarType = value;
+                        }else if (type == CommonComponents.TYPE_YEAR){
+                            //storing user selected items in global scope
+                            MainActivity.selectedYear = value;
+                        }
+
                         mCallback.sendValue(type,itemsList.get(position).getmValue());
                         getFragmentManager().popBackStack();
                     }

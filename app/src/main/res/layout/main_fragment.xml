@@ -46,7 +46,6 @@
                 android:text="@string/model" />
             <EditText
                 android:id="@+id/model"
-                android:enabled="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="left"
@@ -62,7 +61,6 @@
                 android:text="@string/year" />
             <EditText
                 android:id="@+id/year"
-                android:enabled="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="left"
@@ -75,6 +73,8 @@
     <Button
         android:layout_below="@+id/userInputs"
         android:layout_width="wrap_content"
+        android:id="@+id/submitButton"
+        android:clickable="true"
         android:layout_height="wrap_content"
         android:text="@string/submit"
         android:layout_centerHorizontal="true"/>

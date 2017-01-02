@@ -6,13 +6,15 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.test.mycompany.chooseavechile.R;
 
-public class UserSelectionDetailsFragment extends Fragment{
+public class UserSelectionDetailsFragment extends Fragment implements View.OnClickListener{
 
     private TextView detailsText;
+    private Button backButton;
     private static String EXTRA_MANUFACTURE = "manufacture";
     private static String EXTRA_TYPE = "type";
     private static String EXTRA_YEAR = "year";
@@ -42,6 +44,8 @@ public class UserSelectionDetailsFragment extends Fragment{
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.user_selected_final_fragment, null);
         detailsText = (TextView) view.findViewById(R.id.pageDetails);
+        backButton = (Button) view.findViewById(R.id.backButton);
+        backButton.setOnClickListener(this);
 
         if(getArguments()!=null){
             String  type = getArguments().getString(EXTRA_TYPE);
@@ -59,18 +63,23 @@ public class UserSelectionDetailsFragment extends Fragment{
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        //clearing all the field values once shown summary to user
-        MainActivity.selectedYear = "";
-        MainActivity.selectedCarType = "";
-        MainActivity.selectedManufacturerName = "";
-        MainActivity.selectedManufacturer = "";
+    }
 
+    @Override
+    public void onClick(View view)
+    {
+        int id=view.getId();
+        switch(id)
+        {
+            case R.id.backButton:
+                //pop fragment
+                ((ContainerFragment) getParentFragment()).popFragment();
+        }
     }
 
 }

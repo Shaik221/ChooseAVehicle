@@ -32,7 +32,6 @@ public class NetModule {
     String mBaseUrl;
     Context context;
 
-    public String token = "";
 
     public NetModule(String mBaseUrl, Context context) {
         this.mBaseUrl = mBaseUrl;

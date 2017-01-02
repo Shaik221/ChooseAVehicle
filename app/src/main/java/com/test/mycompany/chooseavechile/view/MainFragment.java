@@ -1,43 +1,30 @@
 package com.test.mycompany.chooseavechile.view;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.test.mycompany.chooseavechile.R;
 import com.test.mycompany.chooseavechile.util.CommonComponents;
+import com.test.mycompany.chooseavechile.util.ConnectivityReceiver;
+
 
 public class MainFragment extends Fragment implements View.OnClickListener{
 
     private TextView manufractureText, modelText, yearText;
     private Button submitButton;
-    private static String EXTRA_TYPE = "type";
-    private static String EXTRA_VALUE = "value";
-    public static String manufacturer, carType, year;
-
-    public static final MainFragment newInstance(int type,String value)
-    {
-        MainFragment f = new MainFragment();
-        Bundle bdl = new Bundle(2);
-        bdl.putInt(EXTRA_TYPE, type);
-        bdl.putString(EXTRA_VALUE, value);
-        f.setArguments(bdl);
-        return f;
-    }
+    private Boolean isOnCreatedCalled;
 
     public MainFragment() {
         // Required empty public constructor
     }
-
 
 
     @Override
@@ -54,48 +41,70 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         yearText = (TextView) view.findViewById(R.id.year);
         submitButton = (Button) view.findViewById(R.id.submitButton);
 
-
         manufractureText.setOnClickListener(this);
         modelText.setOnClickListener(this);
         yearText.setOnClickListener(this);
         submitButton.setOnClickListener(this);
 
-        //hide soft key board
-        manufractureText.setInputType(InputType.TYPE_NULL);
-        modelText.setInputType(InputType.TYPE_NULL);
-        yearText.setInputType(InputType.TYPE_NULL);
+        isOnCreatedCalled = true;
+        setValues();
 
-        if(getArguments()!=null){
-            int type = getArguments().getInt(EXTRA_TYPE);
-            String value = getArguments().getString(EXTRA_VALUE);
+         return view;
+    }
 
-            switch (type){
+    //function to set all user selected values
+    public void setValues(){
+        //read values from shared preference
+        SharedPreferences prefs = getActivity().getSharedPreferences(CommonComponents.MyPREFERENCES, Context.MODE_PRIVATE);
 
-                case CommonComponents.TYPE_MANUFACTURER:
-                    manufractureText.setText(value);
-                    manufacturer = manufractureText.getText().toString();
-                    manufractureText.setHint("");
-                    break;
+        if (prefs != null) {
+            //clear all previous values
+            manufractureText.setText("");
+            modelText.setText("");
+            yearText.setText("");
 
-                case CommonComponents.TYPE_MODEL:
-                    modelText.setText(value);
-                    carType = modelText.getText().toString();
-                    modelText.setHint("");
-                    break;
+            String manufracturer = prefs.getString("manufracturer", null);
+            String model = prefs.getString("model", null);
+            String year = prefs.getString("year", null);
 
-                case CommonComponents.TYPE_YEAR:
-                    yearText.setText(value);
-                    year = yearText.getText().toString();
-                    yearText.setHint("");
-                    break;
+            if ( manufracturer != null && !manufracturer.isEmpty() ) {
+                manufractureText.setHint("");
+                manufractureText.setText(MainActivity.selectedManufacturerName);
+            } else {
+                manufractureText.setHint(getString(R.string.manufacturer_select));
+            }
 
-                default:
-                    Toast.makeText(getActivity(),"Cannot fetch data",Toast.LENGTH_SHORT).show();
-                    break;
+            if ( model != null && !model.isEmpty() ) {
+                modelText.setHint("");
+                modelText.setText(model);
+            } else {
+                modelText.setHint(getString(R.string.model_select));
+            }
+
+            if ( year!=null && !year.isEmpty() ) {
+                yearText.setHint("");
+                yearText.setText(year);
+            }else {
+                yearText.setHint(getString(R.string.year_select));
             }
         }
 
-         return view;
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        isOnCreatedCalled = false;
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        if (!isOnCreatedCalled) {
+            //setting user selected values
+            setValues();
+        }
     }
 
     @Override
@@ -118,38 +127,67 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         switch (id)
         {
             case R.id.manufacturer:
-                if(manufractureText.getText() != null)
+                if(!manufractureText.getText().toString().isEmpty())
                 {
                     manufractureText.setText("");
                     manufractureText.setHint("");
                 }
-                getListFragment(CommonComponents.TYPE_MANUFACTURER);
+                //internet connectivity check
+                if (ConnectivityReceiver.isConnected()) {
+                    getListFragment(CommonComponents.TYPE_MANUFACTURER);
+                } else {
+                    Toast.makeText(getActivity(),"Please connect to Network!!\n",Toast.LENGTH_SHORT).show();
+                }
                 break;
 
             case R.id.model:
-                if(modelText.getText() != null)
+                if(!modelText.getText().toString().isEmpty())
                 {
                     modelText.setText("");
                     modelText.setHint("");
                 }
-                getListFragment(CommonComponents.TYPE_MODEL);
+                //internet connectivity check
+                if (ConnectivityReceiver.isConnected()) {
+                    if (!manufractureText.getText().toString().isEmpty()) {
+                        getListFragment(CommonComponents.TYPE_MODEL);
+                    } else {
+                        Toast.makeText(getActivity(), "Please select Manufacturer details..", Toast.LENGTH_SHORT).show();
+                    }
+                }else {
+                    Toast.makeText(getActivity(),"Please connect to Network!!\n",Toast.LENGTH_SHORT).show();
+                }
                 break;
 
             case R.id.year:
-                if(yearText.getText() != null)
+                if(!yearText.getText().toString().isEmpty())
                 {
                     yearText.setText("");
                     yearText.setHint("");
                 }
-                getListFragment(CommonComponents.TYPE_YEAR);
+                //internet connectivity check
+                if (ConnectivityReceiver.isConnected()) {
+                    if (!manufractureText.getText().toString().isEmpty() && !modelText.getText().toString().isEmpty()) {
+                        getListFragment(CommonComponents.TYPE_YEAR);
+                    } else {
+                        Toast.makeText(getActivity(), "Please select Manufacturer and Type details..", Toast.LENGTH_SHORT).show();
+                    }
+                }else {
+                    Toast.makeText(getActivity(),"Please connect to Network!!\n",Toast.LENGTH_SHORT).show();
+                }
                 break;
 
             case R.id.submitButton:
-                if (!MainActivity.selectedManufacturerName.isEmpty() && !MainActivity.selectedCarType.isEmpty() && !MainActivity.selectedYear.isEmpty())
-                {
-                    getFinalDetails(MainActivity.selectedManufacturerName, MainActivity.selectedCarType , MainActivity.selectedYear);
-                } else {
-                    Toast.makeText(getActivity(),"Please select all required details..",Toast.LENGTH_SHORT).show();
+                //internet connectivity check
+                if (ConnectivityReceiver.isConnected()) {
+                    if (!manufractureText.getText().toString().isEmpty() && !modelText.getText().toString().isEmpty()
+                            && !yearText.getText().toString().isEmpty()) {
+                        getFinalDetails(manufractureText.getText().toString(), modelText.getText().toString(),
+                                yearText.getText().toString());
+                    } else {
+                        Toast.makeText(getActivity(), "Please select all required details..", Toast.LENGTH_SHORT).show();
+                    }
+                }else {
+                    Toast.makeText(getActivity(),"Please connect to Network!!\n",Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
@@ -158,18 +196,14 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 
     //method to get all items list values
     public void getListFragment(int typeId){
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.container_framelayout, CarManufacturesListFragment.newInstance(typeId), "list");
-        transaction.addToBackStack(null);
-        transaction.commit();
+        //loading list fragment
+        ((ContainerFragment) getParentFragment()).replaceFragment(CarManufacturesListFragment.newInstance(typeId), true);
+
     }
 
-    //method to call final fragment to showup user seleted values
+    //method to call final fragment to show-up user selected values
     public void getFinalDetails(String manufacturer, String type, String year){
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.container_framelayout, UserSelectionDetailsFragment.newInstance(manufacturer,type,year));
-        transaction.addToBackStack(null);
-        transaction.commit();
+        ((ContainerFragment) getParentFragment()).replaceFragment( UserSelectionDetailsFragment.newInstance(manufacturer,type,year), true);
     }
 
 

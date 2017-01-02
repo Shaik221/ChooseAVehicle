@@ -8,6 +8,7 @@
     <string name="model_select">Enter a Model</string>
     <string name="year_select">Enter a Year</string>
     <string name="submit">Submit</string>
+    <string name="back">Back</string>
     <string name="loadmore">Load More Items</string>
 
     <!-- TODO: Remove or change this placeholder text -->

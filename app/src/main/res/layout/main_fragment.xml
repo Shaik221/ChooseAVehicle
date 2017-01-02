@@ -17,6 +17,7 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
         android:text="@string/app_name" />
 
     <TableLayout
@@ -33,12 +34,16 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:text="@string/manufacturer" />
-            <EditText
+            <TextView
                 android:id="@+id/manufacturer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:padding="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_height="@dimen/header_height"
+                android:layout_marginTop="@dimen/layout_margin_top"
                 android:textColorHint="#9B9B9B"
-                android:gravity="left"
+                android:gravity="center_horizontal"
+                android:background="@drawable/round_border_edittext"
                 android:hint="@string/manufacturer_select" />
 
         </TableRow>
@@ -51,12 +56,16 @@
                 android:textStyle="bold"
                 android:gravity="right"
                 android:text="@string/model" />
-            <EditText
+            <TextView
                 android:id="@+id/model"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/header_height"
+                android:padding="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="@dimen/layout_margin_top"
                 android:textColorHint="#9B9B9B"
-                android:gravity="left"
+                android:gravity="center_horizontal"
+                android:background="@drawable/round_border_edittext"
                 android:hint="@string/model_select" />
 
         </TableRow>
@@ -69,11 +78,15 @@
                 android:textStyle="bold"
                 android:gravity="right"
                 android:text="@string/year" />
-            <EditText
+            <TextView
                 android:id="@+id/year"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="left"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/header_height"
+                android:padding="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="@dimen/layout_margin_top"
+                android:gravity="center_horizontal"
+                android:background="@drawable/round_border_edittext"
                 android:textColorHint="#9B9B9B"
                 android:hint="@string/year_select" />
 

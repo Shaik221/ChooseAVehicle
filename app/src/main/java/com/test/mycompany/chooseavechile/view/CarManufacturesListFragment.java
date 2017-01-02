@@ -1,6 +1,7 @@
 package com.test.mycompany.chooseavechile.view;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -45,16 +46,19 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
 
     public LinearLayoutManager  mLayoutManager=null;
     private static RelativeLayout bottomLayout;
+    public String manufracturerName,model,year;
 
     private boolean userScrolled = true;
     private int pastVisiblesItems, visibleItemCount, totalItemCount;
 
     private int type;
 
+    //shared preference to store values
+    SharedPreferences sharedPref;
+
 
     @Inject
     ItemsPresenter itemsPresenter;
-
 
     public static final CarManufacturesListFragment newInstance(int type)
     {
@@ -65,27 +69,18 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
         return f;
     }
 
-    TextClicked mCallback;
-
+    public CarManufacturesListFragment() {
+        // Required empty public constructor
+    }
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            mCallback = (TextClicked) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString()
-                    + " must implement TextClicked");
-        }
     }
 
     @Override
     public void onDetach() {
-        mCallback = null;
         super.onDetach();
     }
 
@@ -100,7 +95,16 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                 .itemModule(new ItemModule(this))
                 .build().inject(this);
 
+
         type = getArguments().getInt(EXTRA_MESSAGE);
+
+        SharedPreferences prefs = getActivity().getSharedPreferences(CommonComponents.MyPREFERENCES, Context.MODE_PRIVATE);
+        if (prefs != null) {
+            manufracturerName = prefs.getString("manufracturer", null);
+            model = prefs.getString("model", null);
+            year = prefs.getString("year", null);
+        }
+
 
         switch (type){
 
@@ -109,20 +113,11 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                 break;
 
             case CommonComponents.TYPE_MODEL:
-                if (!MainActivity.selectedManufacturer.isEmpty()) {
-                    getCarTypes(page, pageSize, MainActivity.selectedManufacturer, CommonComponents.ACCESS_KEY);
-                }else {
-                    Toast.makeText(getActivity(),"Please select Manufacturer details..",Toast.LENGTH_SHORT).show();
-                }
+                 getCarTypes(page, pageSize, manufracturerName, CommonComponents.ACCESS_KEY);
                 break;
 
             case CommonComponents.TYPE_YEAR:
-                if (!MainActivity.selectedManufacturer.isEmpty() && !MainActivity.selectedCarType.isEmpty()) {
-                    getYearOfManufacturer(MainActivity.selectedManufacturer, MainActivity.selectedCarType, CommonComponents.ACCESS_KEY);
-                }else {
-                    Toast.makeText(getActivity(),"Please select Manufacturer and Type details..",Toast.LENGTH_SHORT).show();
-                }
-
+                getYearOfManufacturer(manufracturerName,model , CommonComponents.ACCESS_KEY);
                 break;
 
             default:
@@ -194,9 +189,13 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
 
                 recyclerView = (RecyclerView) currentView.findViewById(R.id.recycler_view);
 
-                mLayoutManager = new LinearLayoutManager(getContext().getApplicationContext());
+                mLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
                 recyclerView.setLayoutManager(mLayoutManager);
-                //recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+                //shared preference to store selected value
+                sharedPref = getActivity().getSharedPreferences(CommonComponents.MyPREFERENCES,Context.MODE_PRIVATE);
+                final SharedPreferences.Editor editor = sharedPref.edit();
+
                 itemsAdapter = new ItemsAdapter(itemsList,new OnItemClickListener() {
                     @Override
                     public void setOnItemClick(View view, int position) {
@@ -204,26 +203,37 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                         String value = itemsList.get(position).getmKey();
 
                         if (type == CommonComponents.TYPE_MANUFACTURER ) {
-                            //storing user selected items in global scope
-                            MainActivity.selectedManufacturer = value;
-                            //need to store name of the manufacturer for final user selection showing up
+                            //storing user selected manufracture id for other service calls
+
                             MainActivity.selectedManufacturerName = itemsList.get(position).getmValue();
+                            //shared preference
+                            editor.putString(CommonComponents.SelectedManufracturer, value);
+                            //clear other details
+                            editor.remove(CommonComponents.SelectedModel);
+                            editor.remove(CommonComponents.SelectedYear);
+
+
                         }else if (type == CommonComponents.TYPE_MODEL){
-                            //storing user selected items in global scope
-                            MainActivity.selectedCarType = value;
+                            //shared preference
+                            editor.putString(CommonComponents.SelectedModel, value);
+                            editor.remove(CommonComponents.SelectedYear);
+
                         }else if (type == CommonComponents.TYPE_YEAR){
-                            //storing user selected items in global scope
-                            MainActivity.selectedYear = value;
+                            //shared preference
+                            editor.putString(CommonComponents.SelectedYear, value);
                         }
 
-                        mCallback.sendValue(type,itemsList.get(position).getmValue());
-                        getFragmentManager().popBackStack();
+                        //commit changes into shared preference
+                        editor.commit();
+                        //pop fragment
+                        ((ContainerFragment) getParentFragment()).popFragment();
+
                     }
                 });
                 recyclerView.setAdapter(itemsAdapter);
 
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
-                // SETTING ON CLICK LISTENER ON ADAPTER
+                // pagination
                 implementScrollListener();
 
             }
@@ -262,17 +272,16 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                         pastVisiblesItems = mLayoutManager
                                 .findFirstVisibleItemPosition();
 
-                        // Now check if userScrolled is true and also check if
-                        // the item is end then update recycler view and set
-                        // userScrolled to false
-                        if (userScrolled
-                                && (visibleItemCount + pastVisiblesItems) == totalItemCount) {
-                            userScrolled = false;
+                            // Now check if userScrolled is true and also check if
+                            // the item is end then update recycler view and set
+                            // userScrolled to false
+                            if (userScrolled
+                                    && (visibleItemCount + pastVisiblesItems) == totalItemCount) {
+                                userScrolled = false;
 
-                            updateRecyclerView();
+                                updateRecyclerView();
+                            }
                         }
-
-                    }
 
                 });
 
@@ -284,6 +293,10 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
         // Show Progress Layout
         bottomLayout.setVisibility(View.VISIBLE);
 
+        SharedPreferences prefs = getActivity().getSharedPreferences(CommonComponents.MyPREFERENCES, Context.MODE_PRIVATE);
+        final String Manufracturer = prefs.getString("manufracturer", null);
+        final String Model = prefs.getString("model", null);
+
         new Handler().postDelayed(new Runnable() {
 
             @Override
@@ -294,9 +307,9 @@ public class CarManufacturesListFragment extends Fragment implements View.OnClic
                     if (type == CommonComponents.TYPE_MANUFACTURER ) {
                         getManufacturers(page, pageSize, CommonComponents.ACCESS_KEY);
                     }else if (type == CommonComponents.TYPE_MODEL){
-                        getCarTypes(page, pageSize, MainActivity.selectedManufacturer, CommonComponents.ACCESS_KEY);
+                        getCarTypes(page, pageSize, Manufracturer, CommonComponents.ACCESS_KEY);
                     }else if (type == CommonComponents.TYPE_YEAR){
-                        getYearOfManufacturer(MainActivity.selectedManufacturer, MainActivity.selectedCarType, CommonComponents.ACCESS_KEY);
+                        getYearOfManufacturer(Manufracturer, Model, CommonComponents.ACCESS_KEY);
                     }
                 }
                 itemsAdapter.notifyDataSetChanged();// notify adapter

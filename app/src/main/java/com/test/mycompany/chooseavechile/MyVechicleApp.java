@@ -17,12 +17,9 @@ public class MyVechicleApp extends Application {
 
     private static MyVechicleApp mInstance;
 
-    //fragment state hash map
-    //Map<String, Fragment.SavedState> savedStateMap;
 
     @Override
     public void onCreate() {
-        //savedStateMap = new HashMap<String, Fragment.SavedState>();
         super.onCreate();
 
         mInstance = this;
